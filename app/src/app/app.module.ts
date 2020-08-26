@@ -5,13 +5,15 @@ import { AppComponent } from './app.component';
 import { TimerComponent } from './timer/timer.component';
 import { WaitButtonComponent } from './wait-button/wait-button.component';
 import { SecondComponent } from './second/second.component';
+import { TimerStreamComponent } from './timer-stream/timer-stream.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TimerComponent,
     WaitButtonComponent,
-    SecondComponent
+    SecondComponent,
+    TimerStreamComponent
   ],
   imports: [
     BrowserModule
