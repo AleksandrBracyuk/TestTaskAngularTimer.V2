@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SecondData } from './second-data';
 import { SecondService } from './second.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-second',
@@ -9,11 +8,11 @@ import { Observable } from 'rxjs';
   styleUrls: ['./second.component.scss'],
 })
 export class SecondComponent implements OnInit {
-  data: Observable<SecondData>;
+  data: SecondData;
 
-  constructor(private service: SecondService) {}
+  constructor(private secondService: SecondService) {}
 
   ngOnInit(): void {
-    this.data = this.service.GetSecondData().subscribe();
+    this.secondService.subscribe((x) => (this.data = x));
   }
 }
