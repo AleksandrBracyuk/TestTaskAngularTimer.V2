@@ -43,15 +43,32 @@ export class TimerStreamComponent implements OnInit, AfterViewInit {
     );
     let resetButtonStream$ = fromEvent(this.resetButton.nativeElement, 'click');
 
-    let clickStream$ = merge(
+    let events$ = merge(
       startButtonStream$.pipe(mapTo(TimerClickButton.startButton)),
       waitButtonStreamRaw$.pipe(mapTo(TimerClickButton.waitButton)),
       resetButtonStream$.pipe(mapTo(TimerClickButton.resetButton))
     );
 
-    clickStream$.subscribe((x) => {
+    events$.subscribe((x) => {
       this.clickTo = x;
       console.log('click');
+    });
+
+    let super$ = events$.pipe(
+      startWith(new SecondData(0, true)),
+      switchMap((e) =>
+        e == TimerClickButton.waitButton
+          ? interval(1000).pipe(
+              scan((x) => x + 1, 0),
+              map((x) => new SecondData(x, true))
+            )
+          : NEVER
+      )
+    );
+
+    super$.subscribe((x: SecondData) => {
+      this.data = x;
+      console.log('set data');
     });
   }
 }

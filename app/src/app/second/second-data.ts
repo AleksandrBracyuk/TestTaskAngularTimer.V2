@@ -2,8 +2,8 @@ export class SecondData {
   hour: string = '00';
   minute: string = '00';
   second: string = '00';
-  secondsAfterStart: number;
 
+  secondsAfterStart: number;
   isStarted: boolean = false;
 
   constructor(secondsAfterStart: number, isStarted: boolean) {
