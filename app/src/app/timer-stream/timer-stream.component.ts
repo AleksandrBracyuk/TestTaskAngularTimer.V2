@@ -6,7 +6,7 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { SecondData } from '../second/second-data';
-import { fromEvent, interval, merge, noop, NEVER } from 'rxjs';
+import { fromEvent, interval, merge, noop, NEVER, of } from 'rxjs';
 import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
 import { buffer, filter, throttleTime } from 'rxjs/operators';
 import { TimerClickButton } from './timer-click-button.enum';
@@ -22,6 +22,7 @@ export class TimerStreamComponent implements OnInit, AfterViewInit {
   @ViewChild('resetButton') resetButton: ElementRef;
 
   data: SecondData;
+  secondsAfterStart: number;
   clickTo: TimerClickButton;
 
   // по аналогии с https://www.learnrxjs.io/learn-rxjs/recipes/stop-watch
@@ -29,6 +30,7 @@ export class TimerStreamComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.data = new SecondData(0, false);
+    this.secondsAfterStart = 0;
   }
 
   ngAfterViewInit() {
@@ -51,24 +53,34 @@ export class TimerStreamComponent implements OnInit, AfterViewInit {
 
     events$.subscribe((x) => {
       this.clickTo = x;
-      console.log('click');
+      console.log(x);
     });
+
+    let interval$ = interval(1000).pipe(
+      scan((x) => x + 1, this.data.secondsAfterStart),
+      map((x) => new SecondData(x, true))
+    );
+    let stop$ = of(new SecondData(0, false));
 
     let super$ = events$.pipe(
       startWith(new SecondData(0, true)),
+      tap((e) => {
+        if (e == TimerClickButton.resetButton) {
+          this.data.secondsAfterStart = 0;
+        }
+      }),
       switchMap((e) =>
-        e == TimerClickButton.waitButton
-          ? interval(1000).pipe(
-              scan((x) => x + 1, 0),
-              map((x) => new SecondData(x, true))
-            )
+        e == TimerClickButton.startButton
+          ? this.data.isStarted
+            ? stop$
+            : interval$
           : NEVER
       )
     );
 
     super$.subscribe((x: SecondData) => {
       this.data = x;
-      console.log('set data');
+      console.log(this.data);
     });
   }
 }
