@@ -6,9 +6,10 @@
   <div class="second"><span>{{data.second}}</span></div>
 </div>
 <div class="control">
-  <button type="button" class="btn" [class.active]="!data.isStarted"><span>Start
+  <button #startButton type="button" class="btn" [class.active]="!data.isStarted"><span>Start
       / Stop</span></button>
-  <button type="button" class="btn" [class.active]="data.isStarted"><span>Wait</span></button>
-  <button type="button" class="btn"
+  <button #waitButton type="button" class="btn" [class.active]="data.isStarted"><span>Wait</span></button>
+  <button #resetButton type="button" class="btn"
     [class.active]="data.isStarted||data.secondsAfterStart>0"><span>Reset</span></button>
 </div>
+<div>{{clickTo}}</div>
