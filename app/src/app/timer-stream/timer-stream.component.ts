@@ -47,7 +47,7 @@ export class TimerStreamComponent implements OnInit, AfterViewInit {
 
     let events$ = merge(
       startButtonStream$.pipe(mapTo(TimerClickButton.startButton)),
-      waitButtonStreamRaw$.pipe(mapTo(TimerClickButton.waitButton)),
+      waitButtonStream$.pipe(mapTo(TimerClickButton.waitButton)),
       resetButtonStream$.pipe(mapTo(TimerClickButton.resetButton))
     );
 
