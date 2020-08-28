@@ -7,6 +7,7 @@ import { WaitButtonComponent } from './wait-button/wait-button.component';
 import { SecondComponent } from './second/second.component';
 import { TimerStreamComponent } from './timer-stream/timer-stream.component';
 import { TimerStateComponent } from './timer-state/timer-state.component';
+import { Timer2Component } from './timer2/timer2.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { TimerStateComponent } from './timer-state/timer-state.component';
     WaitButtonComponent,
     SecondComponent,
     TimerStreamComponent,
-    TimerStateComponent
+    TimerStateComponent,
+    Timer2Component
   ],
   imports: [
     BrowserModule
