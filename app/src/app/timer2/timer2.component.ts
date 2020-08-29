@@ -15,7 +15,17 @@ import {
   NEVER,
   of,
 } from 'rxjs';
-import { map, mapTo, scan, startWith, switchMap, tap } from 'rxjs/operators';
+import {
+  map,
+  mapTo,
+  scan,
+  startWith,
+  switchMap,
+  mergeMap,
+  tap,
+  publish,
+  refCount,
+} from 'rxjs/operators';
 import { buffer, filter, throttleTime } from 'rxjs/operators';
 
 enum Timer2ClickButton {
@@ -122,20 +132,26 @@ export class Timer2Component implements OnInit, AfterViewInit {
           command: Timer2ClickButton.stopButton,
           currentSecond: 0,
         }
-      )
+      ),
+      publish(),
+      refCount()
     );
 
     let super$ = events$.pipe(
       switchMap((e) => {
         if (e.isWaited) {
-          return NEVER.pipe(startWith(e));
+          return NEVER.pipe(
+            startWith({ ...e, ...{ currentSecond: e.currentSecond } })
+          );
         } else {
           if (e.isStarted) {
             return interval(1000).pipe(
               map((x) => ({ ...e, ...{ currentSecond: e.currentSecond + x } }))
             );
           } else {
-            return NEVER.pipe(startWith(e));
+            return NEVER.pipe(
+              startWith({ ...e, ...{ currentSecond: e.currentSecond } })
+            );
           }
         }
       })
@@ -155,9 +171,9 @@ export class Timer2Component implements OnInit, AfterViewInit {
     // super$.subscribe((x) => {
     //   console.log(x.toTimeString().substr(0, 8));
     // });
-    // events$.subscribe((x) => {
-    //   console.log('events', x);
-    // });
+    events$.subscribe((x) => {
+      console.log('events', x);
+    });
     super$.subscribe((x) => {
       console.log('super', x);
     });
