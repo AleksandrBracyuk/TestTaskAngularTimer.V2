@@ -34,16 +34,7 @@ enum Timer2ClickButton {
   resetButton,
   stopButton,
 }
-class Timer2State {
-  isStarted: boolean = false;
-  isWaited: boolean = false;
-  currentSecond: number = 0;
-}
-interface Time2AccumulateState {
-  isStarted: boolean;
-  isWaited: boolean;
-  currentSecond: number;
-}
+
 interface Time2StateCommand {
   isStarted: boolean;
   isWaited: boolean;
@@ -62,12 +53,12 @@ export class Timer2Component implements OnInit, AfterViewInit {
   @ViewChild('resetButton') resetButton: ElementRef;
 
   data: Observable<Date>;
-  currentState: Timer2State = new Timer2State();
+  secondsAfterStart: number = 0;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.data = NEVER.pipe(startWith(new Date(2020, 0, 1, 0, 0, 0)));
+    // this.data = NEVER.pipe(startWith(new Date(2020, 0, 1, 0, 0, 0)));
   }
 
   ngAfterViewInit() {
@@ -78,7 +69,8 @@ export class Timer2Component implements OnInit, AfterViewInit {
     );
     let waitButtonStream$ = waitButtonStreamRaw$.pipe(
       buffer(waitButtonStreamRaw$.pipe(throttleTime(300))),
-      filter((clickArray) => clickArray.length > 1)
+      filter((clickArray) => clickArray.length > 1),
+      mapTo(Timer2ClickButton.waitButton)
     );
     let eventsRaw$ = merge(
       stream(this.startButton.nativeElement, Timer2ClickButton.startButton),
@@ -137,103 +129,36 @@ export class Timer2Component implements OnInit, AfterViewInit {
     );
 
     let super$ = events$.pipe(
+      startWith({
+        isStarted: false,
+        isWaited: false,
+        command: Timer2ClickButton.stopButton,
+        currentSecond: 0,
+      }),
       switchMap((e) => {
-        if (e.isWaited) {
-          return NEVER.pipe(
-            startWith({ ...e, ...{ currentSecond: e.currentSecond } })
+        if (e.isStarted && !e.isWaited) {
+          let startValue = e.currentSecond;
+          return interval(1000).pipe(
+            map((x) => ({ ...e, ...{ currentSecond: startValue + x } }))
           );
         } else {
-          if (e.isStarted) {
-            return interval(1000).pipe(
-              map((x) => ({ ...e, ...{ currentSecond: e.currentSecond + x } }))
-            );
-          } else {
-            return NEVER.pipe(
-              startWith({ ...e, ...{ currentSecond: e.currentSecond } })
-            );
-          }
+          return NEVER.pipe(startWith(e));
         }
-      })
+      }),
+      publish(),
+      refCount()
     );
 
-    // let state$ = events$.pipe(
-    //   map(x=>this.NextState(x,e))
-    // );
-
-    // let super$ = events$.pipe(
-    //   startWith(new Date(2020, 0, 1)),
-    //   switchMap((e) => this.SwitchMap(e))
-    // );
-
-    // this.data = super$;
-
-    // super$.subscribe((x) => {
-    //   console.log(x.toTimeString().substr(0, 8));
-    // });
+    let data$ = super$.pipe(
+      // tap((x) => (this.secondsAfterStart = x.currentSecond)),
+      map((x) => new Date(2020, 0, 1, 0, 0, x.currentSecond))
+    );
+    this.data = data$;
     events$.subscribe((x) => {
-      console.log('events', x);
+      console.log(x);
     });
-    super$.subscribe((x) => {
-      console.log('super', x);
+    data$.subscribe((x) => {
+      console.log(x.toTimeString().substr(0, 8));
     });
-  }
-
-  private SwitchMap(command: Timer2ClickButton): Observable<Date> {
-    this.currentState = this.NextState(this.currentState, command);
-    let run$ = interval(1000).pipe(map((x) => new Date(2020, 0, 1, 0, 0, x)));
-    let wait$ = NEVER.pipe(
-      startWith(new Date(2020, 0, 1, 0, 0, this.currentState.currentSecond))
-    );
-    console.log(this.currentState);
-    if (this.currentState.isWaited) {
-      return wait$;
-    } else {
-      if (this.currentState.isStarted) {
-        return run$;
-      } else {
-        return wait$;
-      }
-    }
-    return wait$;
-  }
-
-  private NextState(
-    currentState: Timer2State,
-    command: Timer2ClickButton
-  ): Timer2State {
-    var nextState = currentState;
-    switch (command) {
-      case Timer2ClickButton.startButton:
-        /*сняли с паузы*/
-        if (currentState.isWaited) {
-          nextState.isWaited = false;
-        } else {
-          /*остановили*/
-          if (currentState.isStarted) {
-            nextState.isStarted = false;
-            nextState.currentSecond = 0;
-          } else {
-            /*запустили*/
-            nextState.isStarted = true;
-          }
-        }
-        break;
-      case Timer2ClickButton.waitButton:
-        /*поставили на паузу*/
-        if (currentState.isStarted) {
-          nextState.isWaited = true;
-        }
-        break;
-      case Timer2ClickButton.resetButton:
-        /*сбросили счетчик*/
-        if (currentState.currentSecond > 0) {
-          nextState.currentSecond = 0;
-        }
-        break;
-      default:
-        break;
-    }
-
-    return nextState;
   }
 }
