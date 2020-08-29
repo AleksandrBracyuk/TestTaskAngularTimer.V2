@@ -38,6 +38,7 @@ interface Time2StateCommand {
   isStarted: boolean;
   isWaited: boolean;
   command: Timer2ClickButton;
+  currentSecond: number;
 }
 
 @Component({
@@ -77,7 +78,12 @@ export class Timer2Component implements OnInit, AfterViewInit {
     );
 
     let events$ = eventsRam$.pipe(
-      map((x) => ({ isStarted: false, isWaited: false, command: x })),
+      map((x) => ({
+        isStarted: false,
+        isWaited: false,
+        command: x,
+        currentSecond: 0,
+      })),
       scan(
         (s: Time2StateCommand, curr) => ({
           ...s,
@@ -114,8 +120,25 @@ export class Timer2Component implements OnInit, AfterViewInit {
           isStarted: false,
           isWaited: false,
           command: Timer2ClickButton.stopButton,
+          currentSecond: 0,
         }
       )
+    );
+
+    let super$ = events$.pipe(
+      switchMap((e) => {
+        if (e.isWaited) {
+          return NEVER.pipe(startWith(e));
+        } else {
+          if (e.isStarted) {
+            return interval(1000).pipe(
+              map((x) => ({ ...e, ...{ currentSecond: e.currentSecond + x } }))
+            );
+          } else {
+            return NEVER.pipe(startWith(e));
+          }
+        }
+      })
     );
 
     // let state$ = events$.pipe(
@@ -132,8 +155,11 @@ export class Timer2Component implements OnInit, AfterViewInit {
     // super$.subscribe((x) => {
     //   console.log(x.toTimeString().substr(0, 8));
     // });
-    events$.subscribe((x) => {
-      console.log('events', x);
+    // events$.subscribe((x) => {
+    //   console.log('events', x);
+    // });
+    super$.subscribe((x) => {
+      console.log('super', x);
     });
   }
 
