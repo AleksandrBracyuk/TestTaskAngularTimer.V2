@@ -72,22 +72,21 @@ export class Timer2Component implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     let stream = (b, t) => fromEvent(b, 'click').pipe(mapTo(t));
-    // let waitButtonStreamRaw$ = stream(
-    //   this.waitButton.nativeElement,
-    //   Timer2ClickButton.waitButton
-    // );
-    // let waitButtonStream$ = waitButtonStreamRaw$.pipe(
-    //   buffer(waitButtonStreamRaw$.pipe(throttleTime(300))),
-    //   filter((clickArray) => clickArray.length > 1)
-    // );
-    let eventsRam$ = merge(
+    let waitButtonStreamRaw$ = stream(
+      this.waitButton.nativeElement,
+      Timer2ClickButton.waitButton
+    );
+    let waitButtonStream$ = waitButtonStreamRaw$.pipe(
+      buffer(waitButtonStreamRaw$.pipe(throttleTime(300))),
+      filter((clickArray) => clickArray.length > 1)
+    );
+    let eventsRaw$ = merge(
       stream(this.startButton.nativeElement, Timer2ClickButton.startButton),
-      stream(this.waitButton.nativeElement, Timer2ClickButton.waitButton),
-      // waitButtonStream$,
+      waitButtonStream$,
       stream(this.resetButton.nativeElement, Timer2ClickButton.resetButton)
     );
 
-    let events$ = eventsRam$.pipe(
+    let events$ = eventsRaw$.pipe(
       map((x) => ({
         isStarted: false,
         isWaited: false,
@@ -236,19 +235,5 @@ export class Timer2Component implements OnInit, AfterViewInit {
     }
 
     return nextState;
-  }
-
-  public testSpreadInObject() {
-    let obj1 = {
-      isStarted: false,
-      isWaited: true,
-      currentSecond: 111,
-    };
-    let obj2 = {
-      isWaited: false,
-      currentSecond: 5,
-    };
-    let obj3 = { ...obj1, ...obj2 };
-    console.log(obj3);
   }
 }
