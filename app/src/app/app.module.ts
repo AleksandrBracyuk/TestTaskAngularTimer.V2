@@ -8,6 +8,7 @@ import { SecondComponent } from './second/second.component';
 import { TimerStreamComponent } from './timer-stream/timer-stream.component';
 import { TimerStateComponent } from './timer-state/timer-state.component';
 import { Timer2Component } from './timer2/timer2.component';
+import { Timer2SimpleComponent } from './timer2-simple/timer2-simple.component';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { Timer2Component } from './timer2/timer2.component';
     SecondComponent,
     TimerStreamComponent,
     TimerStateComponent,
-    Timer2Component
+    Timer2Component,
+    Timer2SimpleComponent
   ],
   imports: [
     BrowserModule
