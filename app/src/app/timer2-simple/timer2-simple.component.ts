@@ -71,6 +71,11 @@ export class Timer2SimpleComponent implements OnInit, AfterViewInit {
   }
   reset() {
     this.secondsAfterStart = 0;
+    if (this.isStarted) {
+      this.start();
+    } else {
+      this.pause();
+    }
   }
   pause() {
     this.data = this.waitStream();
@@ -83,9 +88,10 @@ export class Timer2SimpleComponent implements OnInit, AfterViewInit {
   }
 
   startStream(): Observable<Date> {
+    let startValue = this.secondsAfterStart;
     return interval(1000).pipe(
-      tap((x) => (this.secondsAfterStart = x)),
-      map((x) => new Date(2020, 0, 1, 0, 0, x))
+      tap((x) => (this.secondsAfterStart = startValue + x)),
+      map((x) => new Date(2020, 0, 1, 0, 0, startValue + x))
     );
   }
   waitStream(): Observable<Date> {
